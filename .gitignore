@@ -20,3 +20,4 @@ bin-release/
 # develop files
 .vscode
 *.out
+*.nsys-rep
