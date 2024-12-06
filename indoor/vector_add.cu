@@ -67,6 +67,7 @@ void test_add_basic() {
     free(z);
     return;
 }
+
 void test_add_unified_memory() {
     int N = 1 << 20;
     int nBytes = N * sizeof(float);
@@ -108,6 +109,7 @@ void test_add_unified_memory() {
 
 int main()
 {
-    test_add_basic();
+    // test_add_basic();
+    test_add_unified_memory();
     return 0;
 }

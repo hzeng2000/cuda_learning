@@ -21,3 +21,4 @@ bin-release/
 .vscode
 *.out
 *.nsys-rep
+*.sqlite
