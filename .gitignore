@@ -22,3 +22,9 @@ bin-release/
 *.out
 *.nsys-rep
 *.sqlite
+
+build
+build/*
+dist
+dist/*
+add2.egg-info
