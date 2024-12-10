@@ -13,6 +13,16 @@ __global__ void vectorAdd(float *a, float *b, float *c, const int N)
     if (i < N) c[i] = a[i] + b[i];
 }
 
+__global__ void vectorAdd_v2(float *a, float *b, float *c, const int N) 
+{
+    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    for (int i = index; i < N; i += stride) 
+    {
+        c[i] = a[i] + b[i];
+    }
+}
+
 /**
  * Test the basic functionality of the vector add kernel
  1. Allocate memory on the host
@@ -28,7 +38,7 @@ __global__ void vectorAdd(float *a, float *b, float *c, const int N)
 void test_add_basic() {
     // 1. Allocate memory on the host
     //  create vectors a,b,c with size 2^10
-    int N = 1 << 10;
+    int N = 1 << 20;
     std::cout << "Vector size: " << N << std::endl;
     int nBytes = N * sizeof(float);
     float *a, *b, *c;
@@ -59,11 +69,25 @@ void test_add_basic() {
     dim3 blocksize(128);
     dim3 girdSize((N + blocksize.x -1) / blocksize.x);
 
-    // 6. Launch the kernel
-    vectorAdd<<<girdSize, blocksize>>>(d_a, d_b, d_c, N);
+    for (int i = 0; i < 10; i++) {
+        // 6. Launch the kernel 
+        cudaEvent_t start, stop;
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+        cudaEventRecord(start);
+        cudaEventQuery(start);
+        vectorAdd_v2<<<girdSize, blocksize>>>(d_a, d_b, d_c, N);
 
-    // 7. synchronize
-    cudaDeviceSynchronize();
+        // 7. synchronize
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+        float elapsedTime;
+        cudaEventElapsedTime(&elapsedTime, start, stop);
+        std::cout << "GPU Time: " << elapsedTime << " ms" << std::endl;
+
+        cudaEventDestroy(start);
+        cudaEventDestroy(stop);
+    }
 
     // 8. Copy data from device to host
     cudaMemcpy(c, d_c, nBytes, cudaMemcpyDeviceToHost);

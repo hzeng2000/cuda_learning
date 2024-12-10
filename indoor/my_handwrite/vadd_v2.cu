@@ -54,11 +54,25 @@ void test_add_basic() {
     dim3 blocksize(128);
     dim3 girdSize(2);
 
-    // 6. Launch the kernel
-    vectorAdd<<<girdSize, blocksize>>>(a, b, c, N);
+    for (int i = 0; i < 10; i++) {
+        // 6. Launch the kernel 
+        cudaEvent_t start, stop;
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+        cudaEventRecord(start);
+        cudaEventQuery(start);
+        vectorAdd<<<girdSize, blocksize>>>(a, b, c, N);
 
-    // 7. synchronize
-    cudaDeviceSynchronize();
+        // 7. synchronize
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+        float elapsedTime;
+        cudaEventElapsedTime(&elapsedTime, start, stop);
+        std::cout << "GPU Time: " << elapsedTime << " ms" << std::endl;
+
+        cudaEventDestroy(start);
+        cudaEventDestroy(stop);
+    }
 
     // 9. check results and free the memory
     float maxError = 0.0f;

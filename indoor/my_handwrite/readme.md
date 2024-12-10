@@ -6,5 +6,5 @@ every thread only process one element for vector_c
 ## vadd_v2
 1-dim grid, 1-dim block
 every thread can process more than element for vector_c(stride)
-using cudaMallocManaged to manage memory
+using cudaMallocManaged to manage memory(tested with 70 times performance loss)
 
