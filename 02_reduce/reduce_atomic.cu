@@ -54,19 +54,15 @@ void __global__ reduce(real *d_x, real *d_y) {
 real reduce(real *d_x) {
     int girdSize = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
     real *d_y;
-    CHECK(cudaMalloc((void **)&d_y, girdSize * sizeof(real)));
-    real *h_y = (real *)malloc(girdSize * sizeof(real));
+    CHECK(cudaMalloc((void **)&d_y,  sizeof(real)));
+    real h_y[1] = {0};
+    CHECK(cudaMemcpy(d_y, h_y, sizeof(real), cudaMemcpyHostToDevice));
 
     reduce<<<girdSize, BLOCK_SIZE, sizeof(real)*BLOCK_SIZE>>>(d_x, d_y);
 
-    CHECK(cudaMemcpy(h_y, d_y, girdSize * sizeof(real), cudaMemcpyDeviceToHost));
-    real result = 0.0;
-    for (int i = 0; i < girdSize; i++) {
-        result += h_y[i];
-    }
-    free(h_y);
+    CHECK(cudaMemcpy(h_y, d_y, sizeof(real), cudaMemcpyDeviceToHost));
     CHECK(cudaFree(d_y));
-    return result;
+    return h_y[0];
 }
 
 void timing(real *h_x, real *d_x) {

@@ -12,4 +12,12 @@ cuda 学习
 - https://zhuanlan.zhihu.com/p/657632577 (通用矩阵乘法：从入门到熟练，待完整)
 3. reduce优化
 - https://zhuanlan.zhihu.com/p/654027980 （对应02_reduce内容， 待完整）
-- https://github.com/ifromeast/cuda_learning/blob/main/02_reduce/reduce_gpu.cu （02_reduce部分源码，部分删减， 待完整）
+- https://github.com/ifromeast/cuda_learning/blob/main/02_reduce/reduce_gpu.cu （02_reduce部分源码， 待完整）
+
+## profile
+```bash
+# profile and generate stats
+nsys profile --stats=true vadd_v1.out
+# check kernel summary and memop summary
+nsys stats --report cuda_gpu_kern_sum --report cuda_gpu_mem_time_sum report3.nsys-rep
+```
