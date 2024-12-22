@@ -117,6 +117,7 @@ void __global__ reduce_cg(real *d_x, real *d_y, const int N) {
 }
 
 real reduce(real *d_x, const int method) {
+    // 这里在优化之后其实可以不手动计算，给个固定值也可以，因为有stride，可以处理超过总线程数大小的数组
     int girdSize = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
     real *d_y;
     CHECK(cudaMalloc((void **)&d_y,  sizeof(real)));
