@@ -46,3 +46,4 @@ warp对global memory的访问均已最大实现了合并访问，但仍有很多
 在不改变这种数据读取方式的前提下，可以用演示更小，带宽更高的share memory代替global memory来实现数据的重复访问，基本思想是充分利用数据的局部性，让一个block内的thread先从global memory读取子矩阵块数据（大小为block_size X block_size），然后把分块数据写入share memory，让每个thread从share memory读取数据，从而避免了global memory的访问。
 ![share memory示意图](./sgemm_v1_shared_memory.png)
 注意 shTileA[threadIdx.y][threadIdx.x] 这里block*block的小矩阵的索引关系，思考一下是threadIdx.y是0维度，因为先横着移动，threadIdx.y不变
+这里可以通过调整block_size的大小来控制共享存储的使用，从而影响性能，实测64*64比32*32 FLOPS多出50%左右

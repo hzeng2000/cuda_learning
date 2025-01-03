@@ -3,7 +3,7 @@
 #include <float.h>
 #include <cuda_runtime.h>
 
-const int BLOCK_SIZE = 32;
+const int BLOCK_SIZE = 64;
 #define OFFSET(row, col, ld) ((row) * (ld) + (col))
 #define FLOAT4(pointer) (reinterpret_cast<float4*>(&(pointer))[0])
 
@@ -154,7 +154,7 @@ float testError(void) {
 
     float max_error = 0.0;
     for (int i = 0; i < M * N; i++) {
-        printf("%f %f\n", cpu_c[i], h_c[i]);
+        // printf("%f %f\n", cpu_c[i], h_c[i]);
         float error = abs(cpu_c[i] - h_c[i]);
         max_error = max(error, max_error);
     }
