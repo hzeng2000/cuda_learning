@@ -27,15 +27,15 @@ void cpuSgemm(
 
 __global__ void naiveSgemm(
     float *a, float *b, float *c, const int M, const int N, const int K) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
-    if (i < M && j < N) {
+    int nCol = blockIdx.x * blockDim.x + threadIdx.x;
+    int nRow = blockIdx.y * blockDim.y + threadIdx.y;
+    if (nCol < M && nRow < N) {
         float sum = 0.0f;
         for (int k = 0; k < K; k++) 
         {
-            sum += a[OFFSET(i, k, K)] * b[OFFSET(k, j, N)];
+            sum += a[OFFSET(nRow, k, K)] * b[OFFSET(k, nCol, N)];
         }
-        c[OFFSET(i, j, N)] = sum;
+        c[OFFSET(nRow, nCol, N)] = sum;
     }
 }
 
@@ -48,6 +48,9 @@ int main(void)
     const int M_list[15] = {128, 192, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384};
     const int N_list[15] = {128, 192, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384};
     const int K_list[15] = {1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024};
+    // const int M_list[15] = {128};
+    // const int N_list[15] = {128};
+    // const int K_list[15] = {1024};
 
     const int outer_repeat = 10, inner_repeat = 1;
     const int BM = 32, BN = 32;

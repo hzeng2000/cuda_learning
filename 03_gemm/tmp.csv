@@ -1,6 +1,0 @@
-
-NOTICE: Existing SQLite export found: output_report.sqlite
-        It is assumed file was previously exported from: output_report.nsys-rep
-        Consider using --force-export=true if needed.
-
-Processing [output_report.sqlite] with [gpu]... 

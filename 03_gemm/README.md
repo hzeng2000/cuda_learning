@@ -18,6 +18,22 @@ gridSize.y * blockSize.y = N
 - 每个thread的workflow为：从矩阵A中读取一行，从矩阵B中读取一列，对两个向量做点积运算，结果写回矩阵 C
 ### 03_gemm/sgemm_v1.cu
 - 通过矩阵分块优化计算访存比，利用share memory减少重复的内存读取
+回顾一下前面的过程，分析下该kernel函数中A,B,C三个矩阵对global memory的读写情况
+读取：
+- 对于C中的每一个元素计算，需要读取A中的一行元素(k个)
+- 对于C中同一行的n个元素，需要重复读取A n次
+- 对于C中的每一个元素计算，需要读取B中的一列元素(k个)
+- 对于C中同一列的n个元素，需要重复读取B m次
+写入：
+- 对于C中的每一个元素只需要写入一次
+
+综上：
+- 对A n*m*k次load
+- 对B n*m*k次load
+- 对C n*m*k次write
+
+但是实际上用NVVP 中 Memory Bandwidth Analysis看的load和store的次数却对不上，原因如下：
+
 GPU指令执行的最小单元是warp（32个thread）, 同一个warp内thread读写操作可以部分合并，具体来说，对于一个warp中的32个thread（按上面的naive版本的矩阵乘，是一个thread计算C中的一个结果，每次循环读取A中的一行中的一个元素，读取B中的一列中的一个元素），会计算C中连续的32个元素（假设是这样）
 c[x][y] = a[...][y] * b[x][...]
 c[x+1][y] = a[...][y] * b[x+1][...]
@@ -25,4 +41,8 @@ c[x+2][y] = a[...][y] * b[x+2][...]
 在每一次循环中，需要读取矩阵A中的同1个元素（一次transaction），读取矩阵B中连续的32个元素
 1 transaction 可以访问32Byte的数据，也就是8个 float， 一次要访问B矩阵中的32个float，也就是需要4次transaction
 总结一下，对A矩阵需要1次transaction，对B矩阵需要4次transaction，总共5次transaction
-首先把矩阵C等分成 BM X BN大小的分块，每个分块由一个block计算。
+
+warp对global memory的访问均已最大实现了合并访问，但仍有很多重复访问，例如，对A矩阵的读取，通过合并访问，原本需要总共读取 mxnxk次(理论)，但是实际上计算C的某一行的时候，是在重复读取A的对应一行，重复读取了k次，总共有m行，重复了m*k，次，其中，warp的优化，使得重复读取降低到m*k/32次，对于B矩阵，则32个线程可以用4次transaction，8个thread的读取可以合并为一次，实际重复读取次数为n*k/8。
+在不改变这种数据读取方式的前提下，可以用演示更小，带宽更高的share memory代替global memory来实现数据的重复访问，基本思想是充分利用数据的局部性，让一个block内的thread先从global memory读取子矩阵块数据（大小为block_size X block_size），然后把分块数据写入share memory，让每个thread从share memory读取数据，从而避免了global memory的访问。
+![share memory示意图](./sgemm_v1_shared_memory.png)
+注意 shTileA[threadIdx.y][threadIdx.x] 这里block*block的小矩阵的索引关系，思考一下是threadIdx.y是0维度，因为先横着移动，threadIdx.y不变

@@ -8,3 +8,6 @@ every thread only process one element for vector_c
 every thread can process more than element for vector_c(stride)
 using cudaMallocManaged to manage memory(tested with 70 times performance loss)
 
+## dim
+understanding the dim of grid and block, threadIdx.x and blockIdx.x
+
