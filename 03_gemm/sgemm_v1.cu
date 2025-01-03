@@ -3,7 +3,7 @@
 #include <float.h>
 #include <cuda_runtime.h>
 
-const int BLOCK_SIZE = 64;
+const int BLOCK_SIZE = 32;
 #define OFFSET(row, col, ld) ((row) * (ld) + (col))
 #define FLOAT4(pointer) (reinterpret_cast<float4*>(&(pointer))[0])
 
